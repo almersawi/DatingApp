@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using API.Data;
 using API.DTOs;
@@ -40,6 +41,24 @@ namespace API.Controllers
                             .ProjectTo<MemberDTO>(this.mapper.ConfigurationProvider)
                             .SingleOrDefaultAsync();
             return user;
+        }
+
+        [HttpPut]
+        public async Task<ActionResult> UpdateUser(UpdateUSerDto updateUserDto) {
+            var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var user = await this.context.Users.SingleOrDefaultAsync( x => x.UserName == username);
+            user.Introduction = updateUserDto.Introduction;
+            user.Interests = updateUserDto.Interests;
+            user.City = updateUserDto.City;
+            user.Country = updateUserDto.Country;
+            user.LookingFor = updateUserDto.LookingFor;
+            try {
+                await this.context.SaveChangesAsync();
+                return NoContent();
+            }
+            catch {
+                return BadRequest("We couldn't save the changes!");
+            }
         }
     }
 }
